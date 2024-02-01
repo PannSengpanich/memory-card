@@ -1,12 +1,21 @@
 import styles from "../Styles/GameCard.module.scss";
-import { Card, CardHeader, CardBody, Image } from "@nextui-org/react";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardMedia from "@mui/material/CardMedia";
+import Typography from "@mui/material/Typography";
+import { CardActionArea } from "@mui/material";
 
-export default function GameCard({ imgSrc, name }) {
-  // for (let i = 0; i++; i < 10) {}
+export default function GameCard({ imgSrc, name, select }) {
   return (
-    <div className={styles.container}>
-      <img src={imgSrc} alt="" />
-      <h3>{name}</h3>
-    </div>
+    <Card className={styles.container}>
+      <CardActionArea onClick={select}>
+        <CardMedia component="img" height="200" image={imgSrc} alt={name} />
+        <CardContent>
+          <Typography gutterBottom variant="h5" component="div">
+            {name}
+          </Typography>
+        </CardContent>
+      </CardActionArea>
+    </Card>
   );
 }
