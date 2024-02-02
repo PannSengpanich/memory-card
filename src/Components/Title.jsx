@@ -5,7 +5,7 @@ export default function Title() {
   const count = signal(0);
   function increment() {
     count.value = count.value + 1;
-    console.log(count);
+    console.log(count.value);
   }
   const number = count.value;
   return (

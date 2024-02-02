@@ -1,8 +1,8 @@
 import styles from "../Styles/GameBoard.module.scss";
 import GameCard from "./GameCard";
 import { fetchImage } from "../services/api/fetchImage";
-import { signal } from "@preact/signals";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
 function getImage() {
   let array = [];
@@ -20,35 +20,56 @@ const shuffle = (array) => {
   return array;
 };
 
-export default function GameBoard() {
+export default function GameBoard({ sendScore }) {
+  const [imageList, setImageList] = useState(null);
+  const [selectedList, setSelectedList] = useState([]);
+
   const { isPending, data } = useQuery({
     queryKey: ["image"],
     queryFn: async () => {
       const imagesData = await Promise.all(getImage());
+      setImageList(imagesData);
+      console.log("set initial image list successful");
       return shuffle(imagesData);
     },
   });
 
-  const imageList = signal(data);
-  const selectedList = signal([]);
-  const counter = signal(0);
-  console.log(imageList);
-
   function handleSelect(item) {
-    selectedList.value.push(item.id);
-    imageList.value = shuffle(imageList.value);
-    counter.value++;
-
-    console.log(imageList);
-    console.log(imageList.value);
-    console.log(selectedList.value);
-    console.log(counter.value);
+    setSelectedList([...selectedList, item.id]);
+    setImageList(shuffle(imageList));
   }
 
+  function hasDuplicateObjects(array) {
+    const length = array.length;
+    for (let i = 0; i < length - 1; i++) {
+      for (let j = i + 1; j < length; j++) {
+        if (isEqual(array[i], array[j])) {
+          return true; // Duplicate found
+        }
+      }
+    }
+    return false; // No duplicates found
+  }
+
+  // A simple equality check for objects
+  function isEqual(obj1, obj2) {
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
+  }
+  useEffect(() => {
+    if (hasDuplicateObjects(selectedList)) {
+      console.log("true");
+      setSelectedList([]);
+    } else {
+      console.log("false");
+      sendScore(selectedList.length);
+    }
+  }, [selectedList]);
+  console.log(imageList);
+  console.log(selectedList);
   if (isPending) return "loading...";
   return (
     <div className={styles.container}>
-      {imageList.value.map((item) => (
+      {imageList.map((item) => (
         <GameCard
           imgSrc={item.sprites.front_default}
           name={item.name}
@@ -56,13 +77,6 @@ export default function GameBoard() {
           select={() => handleSelect(item)}
         ></GameCard>
       ))}
-      <div>{counter.value}</div>
-      <button
-        onClick={() => {
-          counter.value = counter.value + 1;
-          console.log(counter.value);
-        }}
-      ></button>
     </div>
   );
 }
